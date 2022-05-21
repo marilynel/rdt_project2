@@ -99,7 +99,7 @@ class RDTLayer(object):
         # ############################################################################################################ #
         # Identify the data that has been received...
 
-        print('getDataReceived(): Complete this...')
+        #print('getDataReceived(): Complete this...')
 
         # ############################################################################################################ #
         return self.dataReceived
@@ -150,6 +150,7 @@ class RDTLayer(object):
             segmentSend = Segment()
             data = self.dataToSend[self.messageIndex:self.messageIndex+self.DATA_LENGTH]
             self.messageIndex += self.DATA_LENGTH
+            seqnum = str(self.messageIndex)
             segmentSend.setData(seqnum, data)
             print("Sending segment: ", segmentSend.to_string())
             self.sendChannel.send(segmentSend)
@@ -191,7 +192,10 @@ class RDTLayer(object):
 
         # append data in segments to self.dataReceived
 
+        listIncomingSegments.sort(key=lambda seg: int(seg.seqnum))
+
         for seg in listIncomingSegments:
+            print(seg.seqnum)
             self.dataReceived += seg.payload
             print(self.dataReceived)
 
