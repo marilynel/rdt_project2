@@ -33,6 +33,9 @@ class RDTLayer(object):
     currentIteration = 0                                # Use this for segment 'timeouts'
     # Add items as needed
 
+    messageIndex = 0
+    dataReceived = ''
+
     # ################################################################################################################ #
     # __init__()                                                                                                       #
     #                                                                                                                  #
@@ -49,6 +52,7 @@ class RDTLayer(object):
         # Add items as needed
 
         self.messageIndex = 0
+        self.dataReceived = ''
 
     # ################################################################################################################ #
     # setSendChannel()                                                                                                 #
@@ -98,7 +102,7 @@ class RDTLayer(object):
         print('getDataReceived(): Complete this...')
 
         # ############################################################################################################ #
-        return ""
+        return self.dataReceived
 
     # ################################################################################################################ #
     # processData()                                                                                                    #
@@ -122,7 +126,7 @@ class RDTLayer(object):
     #                                                                                                                  #
     # ################################################################################################################ #
     def processSend(self):
-        segmentSend = Segment()
+        #segmentSend = Segment()
 
         # ############################################################################################################ #
         print('processSend(): Complete this...')
@@ -140,22 +144,29 @@ class RDTLayer(object):
         # break up message into RDTLayer.DATA_LENGTH sized pieces
 
         data = ""
-        while (self.messageIndex < len(self.dataToSend)):
+        seqnum = str(self.messageIndex)
+        i = 0
+        while (i + self.DATA_LENGTH < self.FLOW_CONTROL_WIN_SIZE):
+            segmentSend = Segment()
             data = self.dataToSend[self.messageIndex:self.messageIndex+self.DATA_LENGTH]
             self.messageIndex += self.DATA_LENGTH
-            break
+            segmentSend.setData(seqnum, data)
+            print("Sending segment: ", segmentSend.to_string())
+            self.sendChannel.send(segmentSend)
+            i += self.DATA_LENGTH
 
-        seqnum = str(self.messageIndex)
+
+
 
 
 
         # ############################################################################################################ #
         # Display sending segment
-        segmentSend.setData(seqnum,data)
-        print("Sending segment: ", segmentSend.to_string())
+        #segmentSend.setData(seqnum,data)
+        #print("Sending segment: ", segmentSend.to_string())
 
         # Use the unreliable sendChannel to send the segment
-        self.sendChannel.send(segmentSend)
+        #self.sendChannel.send(segmentSend)
 
     # ################################################################################################################ #
     # processReceive()                                                                                                 #
@@ -175,17 +186,21 @@ class RDTLayer(object):
         # What segments have been received?
         # How will you get them back in order?
         # This is where a majority of your logic will be implemented
-        print('processReceive(): Complete this...')
+        #print('processReceive(): Complete this...')
 
 
+        # append data in segments to self.dataReceived
 
+        for seg in listIncomingSegments:
+            self.dataReceived += seg.payload
+            print(self.dataReceived)
 
 
 
         # ############################################################################################################ #
         # How do you respond to what you have received?
         # How can you tell data segments apart from ack segemnts?
-        print('processReceive(): Complete this...')
+        #print('processReceive(): Complete this...')
 
         # Somewhere in here you will be setting the contents of the ack segments to send.
         # The goal is to employ cumulative ack, just like TCP does...
