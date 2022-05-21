@@ -129,7 +129,7 @@ class RDTLayer(object):
         #segmentSend = Segment()
 
         # ############################################################################################################ #
-        print('processSend(): Complete this...')
+        print('processSend():')
 
         # You should pipeline segments to fit the flow-control window
         # The flow-control window is the constant RDTLayer.FLOW_CONTROL_WIN_SIZE
@@ -156,7 +156,13 @@ class RDTLayer(object):
             self.sendChannel.send(segmentSend)
             i += self.DATA_LENGTH
 
-
+        # can't send until i get an ack
+        # ack must be less than
+        # know where I am in the window
+        # when is it ok to move past the window?
+        # its the sender's responsibility to stay in the window
+        # ack value is the sequence number
+        # cannot leave seq num until ack equals or exceeds it
 
 
 
@@ -187,34 +193,29 @@ class RDTLayer(object):
         # What segments have been received?
         # How will you get them back in order?
         # This is where a majority of your logic will be implemented
-        #print('processReceive(): Complete this...')
-
-
         # append data in segments to self.dataReceived
 
         listIncomingSegments.sort(key=lambda seg: int(seg.seqnum))
 
         for seg in listIncomingSegments:
-            print(seg.seqnum)
+            #print(seg.seqnum)
             self.dataReceived += seg.payload
-            print(self.dataReceived)
-
-
 
         # ############################################################################################################ #
         # How do you respond to what you have received?
         # How can you tell data segments apart from ack segemnts?
-        #print('processReceive(): Complete this...')
+        print('processReceive():')
 
         # Somewhere in here you will be setting the contents of the ack segments to send.
         # The goal is to employ cumulative ack, just like TCP does...
-        acknum = "0"
 
 
-        # ############################################################################################################ #
-        # Display response segment
-        segmentAck.setAck(acknum)
-        print("Sending ack: ", segmentAck.to_string())
-
-        # Use the unreliable sendChannel to send the ack packet
-        self.sendChannel.send(segmentAck)
+        if listIncomingSegments:
+            #is this cumulative ack?
+            acknum = str(self.messageIndex)
+            # ############################################################################################################ #
+            # Display response segment
+            segmentAck.setAck(acknum)
+            print("Sending ack: ", segmentAck.to_string())
+            # Use the unreliable sendChannel to send the ack packet
+            self.sendChannel.send(segmentAck)
